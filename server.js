@@ -15,7 +15,6 @@ const adminApiObj = require("./APIS/adminApi");
 const cartApiObj = require("./APIS/cartApi");
 const productApiObj = require("./APIS/productsApi");
 
-
 // use userApiObj when path starts with /users
 app.use("/users", userApiObj);
 app.use("/admin", adminApiObj);
@@ -58,6 +57,7 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((err, req, res, next) => {
+  console.log(err);
   res.send({ message: "Error Occured", reason: err.message });
 });
 

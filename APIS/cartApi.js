@@ -44,12 +44,42 @@ cartApiObj.post(
     }
   })
 );
-cartApiObj.post(
-  "/getcart",
+cartApiObj.get(
+  "/getcart/:username",
   expressAsyncHandler(async (req, res) => {
-    let { username } = req.body;
+    let username = req.params.username;
     let oldCart = await cartCollection.findOne({ username: username });
-    res.send({ message: "success", payload: oldCart.cart });
+    if (oldCart!== undefined) {
+      res.send({ message: "success", payload: oldCart.cart });
+    } else {
+      res.send({ message: "success", payload: [] });
+    }
+  })
+);
+cartApiObj.put(
+  "/deletecart/:username",
+  expressAsyncHandler(async (req, res) => {
+    let username = req.params.username;
+    let product = req.body;
+    let newCart = JSON.parse(JSON.stringify(product));
+    let oldCart = await cartCollection.findOne({ username: username });
+    let result = oldCart.cart.find(({ pid }) => pid === newCart.pid);
+    if (result.count === 1) {
+      await cartCollection.updateOne(
+        { username: username },
+        { $pull: { cart: { pid: newCart.pid } } }
+      );
+      let updatedCart = await cartCollection.findOne({ username: username });
+      res.send({ message: "success", payload: updatedCart });
+    } else {
+      count = result.count - 1;
+      await cartCollection.updateOne(
+        { username: username, "cart.pid": newCart.pid },
+        { $set: { "cart.$.count": count } }
+      );
+      let updatedCart = await cartCollection.findOne({ username: username });
+      res.send({ message: "success", payload: updatedCart });
+    }
   })
 );
 
